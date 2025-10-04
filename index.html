@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bin Find Share</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes animated-gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            50% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --border-color: #30363d;
+            --accent-from: #58a6ff; /* Blue */
+            --accent-to: #3274c3;   /* Darker Blue */
+            --accent-glow: rgba(88, 166, 255, 0.2);
+            --text-primary: #c9d1d9;
+            --text-secondary: #8b949e;
+            --text-heading: #f0f6fc;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            color: var(--text-primary);
+            background: linear-gradient(-45deg, #0d1117, #161b22, #0a192f, #112240);
+            background-size: 400% 400%;
+            animation: animated-gradient 15s ease infinite;
+        }
+        
+        .animated-on-load {
+            opacity: 0; /* Start hidden */
+            animation: fadeInUp 0.5s ease-out forwards;
+        }
+
+        .card {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+            will-change: transform;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px -15px var(--accent-glow);
+            border-color: var(--accent-from);
+        }
+
+        .form-container {
+             background-color: var(--bg-secondary);
+             border: 1px solid var(--border-color);
+             box-shadow: 0 0 40px rgba(0,0,0,0.5);
+        }
+
+        .input-field {
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        .input-field:focus {
+            outline: none;
+            border-color: var(--accent-from);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+        .btn-primary {
+            background-image: linear-gradient(to right, var(--accent-from), var(--accent-to));
+            color: white;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: none;
+            font-weight: 600;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px var(--accent-glow);
+        }
+        .btn-copy {
+            background-color: #21262d;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            transition: all 0.2s;
+        }
+        .btn-copy:hover {
+            background-color: var(--accent-from);
+            color: white;
+            border-color: var(--accent-from);
+        }
+        .btn-back {
+            color: var(--text-secondary);
+            transition: color 0.2s;
+            display: inline-block;
+            margin-top: 24px;
+        }
+        .btn-back:hover {
+            color: var(--text-primary);
+        }
+
+        .check-icon.popping {
+            animation: popIn 0.3s ease-out forwards;
+        }
+
+        .grid-transition {
+            transition: opacity 0.3s ease-in-out;
+        }
+        .grid-fade-out {
+            opacity: 0;
+        }
+        
+        /* Styles for the new notification system */
+        .notification {
+            transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
+            transform: translateY(-150%);
+            opacity: 0;
+        }
+        .notification.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Notification Element -->
+    <div id="notification" class="notification fixed top-5 right-5 z-50 p-4 rounded-lg shadow-lg max-w-sm text-white">
+        <p id="notification-message"></p>
+    </div>
+
+    <div id="app" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <header class="flex justify-center items-center py-6 border-b animated-on-load" style="border-color: var(--border-color);">
+            <h1 class="text-3xl font-bold tracking-tight" style="color: var(--text-heading);">Bin Find Share</h1>
+        </header>
+
+        <main class="mt-10 md:mt-16">
+            <!-- Page: Home / Menu -->
+            <div id="page-home">
+                 <div class="text-center mb-12 animated-on-load">
+                    <h2 class="text-4xl lg:text-5xl font-bold" style="color: var(--text-heading);">Welcome</h2>
+                    <p style="color: var(--text-secondary);" class="mt-4 max-w-2xl mx-auto text-lg">The community-driven vault for finding and sharing valuable BINs.</p>
+                 </div>
+                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-2xl mx-auto">
+                     <div id="nav-bin-share-card" class="card p-8 rounded-lg cursor-pointer text-center animated-on-load" style="animation-delay: 100ms;">
+                         <div class="mx-auto rounded-full h-16 w-16 flex items-center justify-center bg-gradient-to-r from-[color:var(--accent-from)] to-[color:var(--accent-to)] text-white shadow-lg">
+                             <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                         </div>
+                         <h3 class="font-bold text-xl mt-5" style="color: var(--text-heading);">Share a BIN</h3>
+                         <p style="color: var(--text-secondary);" class="text-base mt-2">Submit a new BIN for review by our moderators.</p>
+                     </div>
+                     <div id="nav-bin-finds-card" class="card p-8 rounded-lg cursor-pointer text-center animated-on-load" style="animation-delay: 200ms;">
+                         <div class="mx-auto rounded-full h-16 w-16 flex items-center justify-center bg-gradient-to-r from-[color:var(--accent-from)] to-[color:var(--accent-to)] text-white shadow-lg">
+                             <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                         </div>
+                         <h3 class="font-bold text-xl mt-5" style="color: var(--text-heading);">Find Bins</h3>
+                         <p style="color: var(--text-secondary);" class="text-base mt-2">Browse our extensive collection of approved submissions.</p>
+                     </div>
+                 </div>
+            </div>
+
+            <!-- Page: Share to BIN (Form) -->
+            <div id="page-share" class="hidden">
+                <div class="text-center animated-on-load">
+                    <h2 class="text-3xl font-bold" style="color: var(--text-heading);">Share a New Bin</h2>
+                    <p style="color: var(--text-secondary);" class="mt-2">Your submission will be reviewed by an administrator. Approved bins become public.</p>
+                </div>
+                <div class="form-container mt-8 p-6 sm:p-8 rounded-lg max-w-3xl mx-auto animated-on-load" style="animation-delay: 100ms;">
+                    <form id="share-form" class="space-y-5">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                            <input type="text" id="form-name" placeholder="Name" class="w-full p-3 rounded-md input-field" required>
+                            <input type="text" id="form-subject" placeholder="Subject (e.g., YouTube Premium)" class="w-full p-3 rounded-md input-field" required>
+                        </div>
+                        <input type="text" id="form-cc" placeholder="CC Number (e.g., 5154620023xxxxxx)" class="w-full p-3 rounded-md input-field" required>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                            <input type="text" id="form-date" placeholder="mm/dd/yyyy" class="w-full p-3 rounded-md input-field" required>
+                            <input type="text" id="form-country" placeholder="Country" class="w-full p-3 rounded-md input-field" required>
+                        </div>
+                        <textarea id="form-note" placeholder="Note (Optional)" rows="4" class="w-full p-3 rounded-md input-field"></textarea>
+                        <button type="submit" class="w-full btn-primary font-bold py-3 px-4 rounded-md flex items-center justify-center gap-2 text-lg">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                            <span class="btn-text">Submit for Review</span>
+                            <div class="btn-spinner hidden animate-spin rounded-full h-5 w-5 border-b-2 border-white ml-2"></div>
+                        </button>
+                    </form>
+                </div>
+                <div class="text-center animated-on-load" style="animation-delay: 200ms;">
+                    <button id="back-to-home-from-share" class="btn-back">← Back to Home</button>
+                </div>
+            </div>
+
+            <!-- Page: Bin Finds (Card View) -->
+            <div id="page-finds" class="hidden">
+                 <div class="text-center animated-on-load">
+                    <h2 class="text-3xl font-bold" style="color: var(--text-heading);">Find Bins</h2>
+                    <p style="color: var(--text-secondary);" class="mt-2">Search the community vault for approved BINs.</p>
+                 </div>
+                <div class="my-8 max-w-2xl mx-auto animated-on-load" style="animation-delay: 100ms;">
+                    <input type="text" id="search-input" placeholder="Search by name, subject, country..." class="w-full p-4 rounded-md input-field text-lg">
+                </div>
+                <div id="finds-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 grid-transition">
+                    <!-- Cards will be injected here -->
+                </div>
+                <div id="loading-spinner" class="text-center py-10">
+                    <div class="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto" style="border-color: var(--accent-from);"></div>
+                    <p class="mt-4" style="color: var(--text-secondary);">Loading Bins...</p>
+                </div>
+                <div id="no-results" class="hidden text-center py-10 card rounded-lg animated-on-load">
+                    <p class="text-lg font-medium" style="color: var(--text-heading);">No Bins Found</p>
+                    <p class="mt-1" style="color: var(--text-secondary);">Try a different search or check back later.</p>
+                </div>
+                <div class="text-center animated-on-load" style="animation-delay: 200ms;">
+                    <button id="back-to-home-from-finds" class="btn-back">← Back to Home</button>
+                </div>
+            </div>
+        </main>
+        
+        <footer class="text-center mt-16 pb-8 animated-on-load" style="animation-delay: 300ms;">
+            <p style="color: var(--text-secondary);" class="text-sm">Created for the community</p>
+            <p style="color: var(--text-secondary);" class="text-xs mt-2 opacity-75">@dev by Robiul</p>
+        </footer>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBEf5F9HGOFMQ5bxgIs2OxnSrr534vDGa0",
+            authDomain: "bin-find-and-share.firebaseapp.com",
+            databaseURL: "https://bin-find-and-share-default-rtdb.firebaseio.com",
+            projectId: "bin-find-and-share",
+            storageBucket: "bin-find-and-share.firebasestorage.app",
+            messagingSenderId: "477065179393",
+            appId: "1:477065179393:web:17c6918b23b39803546b00",
+            measurementId: "G-ZEPTZ43V1Z"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // DOM Elements
+        const pages = {
+            home: document.getElementById('page-home'),
+            share: document.getElementById('page-share'),
+            find: document.getElementById('page-finds'),
+        };
+        const navCardShare = document.getElementById('nav-bin-share-card');
+        const navCardFinds = document.getElementById('nav-bin-finds-card');
+        const backBtnShare = document.getElementById('back-to-home-from-share');
+        const backBtnFinds = document.getElementById('back-to-home-from-finds');
+        const shareForm = document.getElementById('share-form');
+        const findsGrid = document.getElementById('finds-grid');
+        const searchInput = document.getElementById('search-input');
+        const loadingSpinner = document.getElementById('loading-spinner');
+        const noResults = document.getElementById('no-results');
+        const notificationEl = document.getElementById('notification');
+        const notificationMessageEl = document.getElementById('notification-message');
+
+        let allBins = [];
+        let notificationTimeout;
+
+        // --- New and Improved Functions ---
+
+        // Function to show notifications instead of alerts
+        function showNotification(message, isSuccess = true) {
+            clearTimeout(notificationTimeout);
+            notificationMessageEl.textContent = message;
+            // Reset classes to default state before adding new ones
+            notificationEl.className = 'notification fixed top-5 right-5 z-50 p-4 rounded-lg shadow-lg max-w-sm text-white';
+            notificationEl.classList.add(isSuccess ? 'bg-green-600' : 'bg-red-600');
+            notificationEl.classList.add('show');
+            notificationTimeout = setTimeout(() => {
+                notificationEl.classList.remove('show');
+            }, 3000);
+        }
+
+        // Page navigation function with History API integration
+        function showPage(pageKey, isFromHistory = false) {
+            Object.values(pages).forEach(p => p.classList.add('hidden'));
+            
+            const pageToShow = pages[pageKey];
+            if (!pageToShow) {
+                console.warn(`Page key "${pageKey}" not found, defaulting to home.`);
+                pages.home.classList.remove('hidden');
+                if (!isFromHistory) {
+                    history.pushState({ page: 'home' }, '', window.location.pathname);
+                }
+                return;
+            }
+            
+            pageToShow.classList.remove('hidden');
+
+            // Only push a new state if this isn't a back/forward navigation
+            if (!isFromHistory) {
+                const newUrl = pageKey === 'home' ? window.location.pathname : `#${pageKey}`;
+                history.pushState({ page: pageKey }, '', newUrl);
+            }
+            
+            // Re-trigger animations for the current page
+            const animatedElements = pageToShow.querySelectorAll('.animated-on-load');
+            animatedElements.forEach((el, index) => {
+                el.style.animation = 'none';
+                el.offsetHeight; // Trigger reflow to restart animation
+                el.style.animation = `fadeInUp 0.5s ease-out ${index * 100}ms forwards`;
+            });
+        }
+
+        // Listen for browser back/forward button clicks
+        window.addEventListener('popstate', (event) => {
+            if (event.state && event.state.page) {
+                showPage(event.state.page, true);
+            } else {
+                // Fallback for initial state
+                showPage('home', true);
+            }
+        });
+
+        // --- Event Listeners and Initial Setup ---
+
+        // Navigation clicks
+        navCardShare.addEventListener('click', () => showPage('share'));
+        navCardFinds.addEventListener('click', () => showPage('find'));
+        backBtnShare.addEventListener('click', () => showPage('home'));
+        backBtnFinds.addEventListener('click', () => showPage('home'));
+
+        // Initial page load logic: Read URL hash and set history state
+        document.addEventListener('DOMContentLoaded', () => {
+            const initialPage = window.location.hash.substring(1) || 'home';
+            history.replaceState({ page: initialPage }, '', window.location.pathname + window.location.hash);
+            showPage(initialPage, true);
+        });
+        
+        // Form submission with new notification system
+        shareForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const submitButton = shareForm.querySelector('button[type="submit"]');
+            const btnText = submitButton.querySelector('.btn-text');
+            const btnSpinner = submitButton.querySelector('.btn-spinner');
+            
+            submitButton.disabled = true;
+            btnText.textContent = 'Submitting...';
+            btnSpinner.classList.remove('hidden');
+
+            const ccNumberRaw = document.getElementById('form-cc').value.replace(/\s+/g, '');
+            let maskedCC = ccNumberRaw;
+
+            if (ccNumberRaw.length > 10) {
+                maskedCC = `${ccNumberRaw.substring(0, 6)}${'x'.repeat(ccNumberRaw.length - 10)}${ccNumberRaw.substring(ccNumberRaw.length - 4)}`;
+            }
+
+            const submission = {
+                name: document.getElementById('form-name').value,
+                subject: document.getElementById('form-subject').value,
+                ccNumber: maskedCC,
+                date: document.getElementById('form-date').value,
+                country: document.getElementById('form-country').value,
+                note: document.getElementById('form-note').value,
+                createdAt: new Date(),
+                status: 'pending'
+            };
+
+            try {
+                await addDoc(collection(db, "submissions"), submission);
+                shareForm.reset();
+                showNotification('Success! Your BIN has been submitted for review.');
+                showPage('home');
+            } catch (error) {
+                console.error("Error adding document: ", error);
+                showNotification('Error: Could not share BIN. Please try again.', false);
+            } finally {
+                submitButton.disabled = false;
+                btnText.textContent = 'Submit for Review';
+                btnSpinner.classList.add('hidden');
+            }
+        });
+
+        // --- Card Rendering and Data Handling (Mostly Unchanged) ---
+
+        function createCard(binData, index) {
+            const card = document.createElement('div');
+            card.className = 'card rounded-lg p-5 flex flex-col space-y-3 animated-on-load';
+            card.style.animationDelay = `${index * 50}ms`;
+            
+            const createRow = (label, value) => {
+                if (!value) return '';
+                // Added break-all to the value span to prevent long strings from breaking the layout
+                return `
+                    <div class="flex justify-between items-start gap-2">
+                        <span class="text-sm flex-shrink-0" style="color: var(--text-secondary);">${label}</span>
+                        <div class="flex items-center gap-2">
+                            <span class="text-sm font-semibold text-right break-all">${value}</span>
+                            <button class="btn-copy text-xs px-2 py-1 rounded-md flex items-center gap-1 flex-shrink-0" data-copy-value="${value}">
+                                <svg class="copy-icon" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                                <svg class="check-icon hidden" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                <span class="copy-text">Copy</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            };
+            
+            const createdDate = binData.createdAt?.toDate ? binData.createdAt.toDate().toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' }) : 'N/A';
+
+            card.innerHTML = `
+                <div>
+                    <h4 class="font-bold text-lg truncate" style="color: var(--text-heading);">${binData.subject}</h4>
+                    <p class="text-sm" style="color: var(--text-secondary);">${binData.name}</p>
+                </div>
+                <div class="space-y-2 !mt-4">
+                    ${createRow('CC Number', binData.ccNumber)}
+                    ${createRow('Country', binData.country)}
+                    ${createRow('Date', binData.date)}
+                </div>
+                ${binData.note ? `<div class="!mt-4 pt-3 border-t" style="border-color: var(--border-color);">
+                    <p class="text-sm whitespace-pre-wrap" style="color: var(--text-secondary);">${binData.note}</p>
+                </div>` : '<div class="flex-grow"></div>'}
+                <div class="text-xs text-right !mt-auto pt-3" style="color: var(--text-secondary);">
+                    ${createdDate}
+                </div>
+            `;
+            return card;
+        }
+
+        function renderCards(bins) {
+            findsGrid.innerHTML = '';
+            loadingSpinner.classList.add('hidden');
+            if (bins.length === 0) {
+                noResults.classList.remove('hidden');
+            } else {
+                noResults.classList.add('hidden');
+                bins.forEach((bin, index) => findsGrid.appendChild(createCard(bin, index)));
+            }
+        }
+        
+        const q = query(collection(db, "submissions"), where("status", "==", "approved"));
+        onSnapshot(q, (querySnapshot) => {
+            allBins = [];
+            querySnapshot.forEach((doc) => allBins.push({ id: doc.id, ...doc.data() }));
+            allBins.sort((a, b) => (b.createdAt?.toDate?.() || 0) - (a.createdAt?.toDate?.() || 0));
+            renderCards(allBins.filter(filterBins));
+        }, (error) => {
+            console.error("Firebase Error:", error);
+            loadingSpinner.innerHTML = `<p style="color: #F47174;">Error loading data.</p>`;
+        });
+
+        const filterBins = (bin) => {
+            const searchTerm = searchInput.value.toLowerCase();
+            if (!searchTerm) return true;
+            // Ensure value exists before trying to convert to string
+            return Object.values(bin).some(val => 
+                val && String(val).toLowerCase().includes(searchTerm)
+            );
+        };
+
+        let searchTimeout;
+        searchInput.addEventListener('input', () => {
+            clearTimeout(searchTimeout);
+            findsGrid.classList.add('grid-fade-out');
+            searchTimeout = setTimeout(() => {
+                renderCards(allBins.filter(filterBins));
+                findsGrid.classList.remove('grid-fade-out');
+            }, 300);
+        });
+
+        findsGrid.addEventListener('click', (e) => {
+            const button = e.target.closest('.btn-copy');
+            if (button) {
+                const textToCopy = button.dataset.copyValue;
+                if (textToCopy) {
+                    const fallbackCopy = (text) => {
+                        const textArea = document.createElement("textarea");
+                        textArea.value = text;
+                        textArea.style.position = "fixed"; 
+                        textArea.style.top = "-9999px";
+                        textArea.style.left = "-9999px";
+                        document.body.appendChild(textArea);
+                        textArea.focus();
+                        textArea.select();
+                        try {
+                            if (document.execCommand('copy')) {
+                                showCopySuccess(button);
+                            }
+                        } catch (err) {
+                            console.error('Fallback: Oops, unable to copy', err);
+                        }
+                        document.body.removeChild(textArea);
+                    };
+
+                    const showCopySuccess = (btn) => {
+                        if (btn.disabled) return; // Prevent multiple quick clicks
+                        btn.disabled = true;
+
+                        const copyIcon = btn.querySelector('.copy-icon');
+                        const checkIcon = btn.querySelector('.check-icon');
+                        const copyText = btn.querySelector('.copy-text');
+                        
+                        copyIcon.classList.add('hidden');
+                        checkIcon.classList.remove('hidden');
+                        checkIcon.classList.add('popping');
+                        copyText.textContent = 'Copied!';
+
+                        setTimeout(() => {
+                            copyIcon.classList.remove('hidden');
+                            checkIcon.classList.add('hidden');
+                            checkIcon.classList.remove('popping');
+                            copyText.textContent = 'Copy';
+                            btn.disabled = false;
+                        }, 2000);
+                    };
+
+                    if (!navigator.clipboard) {
+                        fallbackCopy(textToCopy);
+                        return;
+                    }
+                    navigator.clipboard.writeText(textToCopy).then(() => {
+                        showCopySuccess(button);
+                    }).catch(err => {
+                        console.error('Async: Could not copy text: ', err);
+                        fallbackCopy(textToCopy);
+                    });
+                }
+            }
+        });
+    </script>
+</body>
+</html>
